@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Network Utilities - FIXED LOCATION DETECTION
+Network Utilities - FIXED RETURN TYPES
 Created by s3cret_proj3ct
 """
 
@@ -45,7 +45,6 @@ def ensure_location():
     print("\n📍 CEK LOKASI:")
     print("-" * 30)
     
-    # Cek dengan metode real
     is_active, message = check_location_real()
     
     if is_active:
@@ -82,28 +81,43 @@ def get_public_ip():
     return "Unknown"
 
 def scan_wifi_once():
-    """Scan WiFi networks once - OPTIMIZED"""
+    """Scan WiFi networks once - OPTIMIZED - PASTIKAN RETURN LIST"""
     # Aktifkan location sebentar
     os.system('termux-location -p once -r network > /dev/null 2>&1 &')
     time.sleep(1)  # Tunggu sebentar
     
-    result = subprocess.run(['termux-wifi-scaninfo'], capture_output=True, text=True, timeout=3)
-    if result.returncode == 0 and result.stdout:
-        try:
-            return json.loads(result.stdout)
-        except:
-            return None
-    return None
+    try:
+        result = subprocess.run(['termux-wifi-scaninfo'], capture_output=True, text=True, timeout=3)
+        if result.returncode == 0 and result.stdout:
+            try:
+                data = json.loads(result.stdout)
+                # Pastikan data adalah list
+                if isinstance(data, list):
+                    return data
+                elif isinstance(data, dict):
+                    # Kalo ternyata dict, wrap ke list
+                    return [data]
+                else:
+                    return []
+            except:
+                return []
+        else:
+            return []
+    except:
+        return []
 
 def get_wifi_info():
     """Get current WiFi connection info - CEPAT"""
-    result = subprocess.run(['termux-wifi-connectioninfo'], capture_output=True, text=True, timeout=2)
-    if result.returncode == 0 and result.stdout:
-        try:
-            return json.loads(result.stdout)
-        except:
-            return None
-    return None
+    try:
+        result = subprocess.run(['termux-wifi-connectioninfo'], capture_output=True, text=True, timeout=2)
+        if result.returncode == 0 and result.stdout:
+            try:
+                return json.loads(result.stdout)
+            except:
+                return None
+        return None
+    except:
+        return None
 
 def scan_devices_fast():
     """Scan for devices on local network - CEPAT (hanya 20 IP pertama)"""
@@ -116,7 +130,6 @@ def scan_devices_fast():
     
     print(f"📡 Scanning network {network}0/24 (fast mode)...")
     
-    # Scan hanya 20 IP pertama biar cepat
     for i in range(1, 21):
         ip = f"{network}{i}"
         if ip == local_ip:
