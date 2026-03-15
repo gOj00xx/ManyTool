@@ -2,93 +2,171 @@
 # -*- coding: utf-8 -*-
 
 """
-About Tool Module - Informasi & Disclaimer
+Information Tools Module
 Created by s3cret_proj3ct
 """
 
 import os
 import sys
-from colorama import Fore, Style, init
+import time
+import socket
+import json
+import subprocess
+import requests
+from datetime import datetime
+from colorama import Fore, Style
 
 from utils.ascii_art import get_ascii
-from utils.formatters import print_section
-
-init(autoreset=True)
+from utils.network import get_local_ip, get_public_ip, get_wifi_info
+from utils.formatters import print_section, print_success, print_error, print_info
 
 def clear_screen():
-    """Clear terminal screen"""
     os.system('clear' if os.name == 'posix' else 'cls')
 
-def about_tool():
-    """Menampilkan informasi tentang tool dengan disclaimer"""
+# ============================================================
+=== FUNGSI WIFI_INFO (UNTUK MENU 10)
+--============================================================
+def wifi_info():
+    """Get current WiFi connection info"""
     clear_screen()
+    print(get_ascii('info'))
+    print_section("WIFI CONNECTION INFO")
     
-    # ASCII Art (bisa diganti dengan yang lebih keren)
-    print(f"{Fore.RED}")
-    print("███╗   ███╗ █████╗ ███╗   ██╗██╗   ██╗████████╗ ██████╗  ██████╗ ██╗")
-    print("████╗ ████║██╔══██╗████╗  ██║╚██╗ ██╔╝╚══██╔══╝██╔═══██╗██╔═══██╗██║")
-    print("██╔████╔██║███████║██╔██╗ ██║ ╚████╔╝    ██║   ██║   ██║██║   ██║██║")
-    print("██║╚██╔╝██║██╔══██║██║╚██╗██║  ╚██╔╝     ██║   ██║   ██║██║   ██║██║")
-    print("██║ ╚═╝ ██║██║  ██║██║ ╚████║   ██║      ██║   ╚██████╔╝╚██████╔╝███████╗")
-    print("╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝      ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝")
+    info = get_wifi_info()
+    
+    if info:
+        ssid = info.get('ssid')
+        if ssid:
+            print_success(f"SSID: {ssid}\n")
+            print(f"   BSSID      : {info.get('bssid', 'N/A')}")
+            print(f"   IP Address : {info.get('ip', 'N/A')}")
+            print(f"   Speed      : {info.get('link_speed', 'N/A')} Mbps")
+            print(f"   Frequency  : {info.get('frequency', 'N/A')} MHz")
+            print(f"   RSSI       : {info.get('rssi', 'N/A')} dBm")
+        else:
+            print_error("Not connected to WiFi")
+    else:
+        print_error("Could not get connection info")
+    
+    input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+
+# ============================================================
+=== FUNGSI IP_INFO (UNTUK MENU 11)
+--============================================================
+def ip_info():
+    """Get IP information"""
+    clear_screen()
+    print(get_ascii('info'))
+    print_section("IP INFORMATION")
+    
+    local_ip = get_local_ip()
+    public_ip = get_public_ip()
+    
+    print_info("Local Network:")
+    print(f"   Local IP : {local_ip}")
+    
+    try:
+        hostname = socket.gethostname()
+        print(f"   Hostname : {hostname}")
+    except:
+        pass
+    
+    print(f"\n{Fore.CYAN}Internet:{Style.RESET_ALL}")
+    print(f"   Public IP: {public_ip}")
+    
+    # Get geolocation for public IP
+    if public_ip != "Unknown":
+        try:
+            response = requests.get(f'http://ip-api.com/json/{public_ip}', timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'success':
+                    print(f"\n{Fore.CYAN}Geolocation:{Style.RESET_ALL}")
+                    print(f"   Country : {data.get('country', 'N/A')}")
+                    print(f"   Region  : {data.get('regionName', 'N/A')}")
+                    print(f"   City    : {data.get('city', 'N/A')}")
+                    print(f"   ISP     : {data.get('isp', 'N/A')}")
+        except:
+            pass
+    
+    input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+
+# ============================================================
+=== FUNGSI BATTERY_INFO (UNTUK MENU 12)
+--============================================================
+def battery_info():
+    """Get battery information"""
+    clear_screen()
+    print(get_ascii('info'))
+    print_section("BATTERY INFORMATION")
+    
+    try:
+        result = subprocess.run(['termux-battery-status'], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0 and result.stdout:
+            data = json.loads(result.stdout)
+            
+            percentage = data.get('percentage', 0)
+            status = data.get('status', 'UNKNOWN')
+            health = data.get('health', 'UNKNOWN')
+            temp = data.get('temperature', 0) / 10
+            
+            print_success(f"Battery: {percentage}%\n")
+            
+            # Status
+            if status == 'CHARGING':
+                print(f"   Power     : 🔌 CHARGING")
+            elif status == 'DISCHARGING':
+                print(f"   Power     : 🔋 DISCHARGING")
+            elif status == 'FULL':
+                print(f"   Power     : ✅ FULL")
+            else:
+                print(f"   Power     : {status}")
+            
+            print(f"   Health    : {health}")
+            print(f"   Temp      : {temp:.1f}°C")
+            
+            # Battery bar
+            bar_len = 30
+            filled = int(bar_len * percentage / 100)
+            bar = '█' * filled + '░' * (bar_len - filled)
+            print(f"\n   [{bar}] {percentage}%")
+            
+        else:
+            print_error("Could not get battery info")
+    except:
+        print_error("Battery info not available")
+    
+    input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+
+# ============================================================
+=== FUNGSI TAMBAHAN (UNTUK KREDIT - BISA DIPANGGIL)
+--============================================================
+def show_credits():
+    """Show credits information"""
+    clear_screen()
+    print(get_ascii('info'))
+    print_section("CREDITS")
+    
+    print(f"{Fore.GREEN}")
+    print("╔════════════════════════════════════════════════════╗")
+    print("║                                                    ║")
+    print("║              CREATED BY s3cret_proj3ct            ║")
+    print("║                                                    ║")
+    print("╠════════════════════════════════════════════════════╣")
+    print("║                                                    ║")
+    print("║  🔹 WhatsApp Spam Tool                             ║")
+    print("║  🔹 DDoS Attack Suite                              ║")
+    print("║  🔹 Roblox Follow Spam                             ║")
+    print("║  🔹 TikTok Report Spam                             ║")
+    print("║  🔹 WiFi & Device Scanner                          ║")
+    print("║  🔹 Information Tools                              ║")
+    print("║                                                    ║")
+    print("╠════════════════════════════════════════════════════╣
     print(f"{Style.RESET_ALL}")
     
-    # Border
-    print(f"{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
-    
-    # Judul
-    print(f"{Fore.YELLOW}This Tools \"ManyTool\" Made by s3cret_proj3ct{Style.RESET_ALL}")
-    print()
-    
-    # Disclaimer (YANG PENTING)
-    print(f"{Fore.RED}⚠️  DISCLAIMER ⚠️{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}{'=' * 60}{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}we are not responsible if you are subject to sanctions{Style.RESET_ALL}")
-    print()
-    
-    # Penjelasan
-    print(f"{Fore.CYAN}This tool is created for EDUCATIONAL PURPOSES ONLY.{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}Using this tool against any system without permission is ILLEGAL.{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}The developer assumes NO LIABILITY for any misuse.{Style.RESET_ALL}")
-    print()
-    
-    # Informasi Tool
-    print(f"{Fore.GREEN}📋 Tool Information:{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Version     : 7.0{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Creator     : s3cret_proj3ct{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Release     : 2025{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Modules     : 20+{Style.RESET_ALL}")
-    print()
-    
-    # Fitur
-    print(f"{Fore.GREEN}⚡ Features:{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • WhatsApp Spam (Fonnte API){Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • DDoS Attack (10 methods){Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Roblox Follow Spam{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • TikTok Report Spam{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • WiFi Scanner (Once & Loop){Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Device Scanner (Once & Loop){Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • IP Information{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • Battery Status{Style.RESET_ALL}")
-    print(f"{Fore.WHITE}  • GitHub Repo Info{Style.RESET_ALL}")
-    print()
-    
-    # Credits
-    print(f"{Fore.GREEN}👤 Credits:{Style.RESET_ALL}")
-    print(f"{Fore.MAGENTA}  Main Developer : s3cret_proj3ct{Style.RESET_ALL}")
-    print(f"{Fore.MAGENTA}  Special Thanks : All Member About Jailbreak Text{Style.RESET_ALL}")
-    print(f"{Fore.MAGENTA}  Thanks to      : Internet, WorkerGLT{Style.RESET_ALL}")
-    print()
-    
-    # Warning besar
-    print(f"{Fore.RED}{'!' * 60}{Style.RESET_ALL}")
-    print(f"{Fore.RED}!!! USE AT YOUR OWN RISK !!!{Style.RESET_ALL}")
-    print(f"{Fore.RED}{'!' * 60}{Style.RESET_ALL}")
-    print()
-    
-    # Footer
-    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}Copyright © 2025 s3cret_proj3ct{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
+    print(f"\n{Fore.YELLOW}⚠️  DISCLAIMER:{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}This tool is for educational purposes only.{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}We are not responsible for any misuse.{Style.RESET_ALL}")
+    print(f"{Fore.RED}Use at your own risk!{Style.RESET_ALL}")
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
