@@ -24,9 +24,6 @@ from utils.formatters import print_section, print_success, print_error, print_in
 SCAN_ACTIVE = False
 SCAN_THREAD = None
 
-# ============================================================
-=== SCAN ONCE
---============================================================
 def scan_once():
     """Scan for devices on network once"""
     os.system('clear')
@@ -55,9 +52,6 @@ def scan_once():
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
 
-# ============================================================
-=== SCAN LOOP
---============================================================
 def scan_loop_function():
     """Thread for continuous scanning"""
     global SCAN_ACTIVE
