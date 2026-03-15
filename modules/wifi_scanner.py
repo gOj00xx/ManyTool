@@ -23,9 +23,6 @@ from utils.formatters import print_section, print_success, print_error, print_in
 SCAN_ACTIVE = False
 SCAN_THREAD = None
 
-# ============================================================
-=== SCAN ONCE
---============================================================
 def scan_once():
     """Scan WiFi networks once"""
     os.system('clear')
@@ -70,9 +67,6 @@ def scan_once():
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
 
-# ============================================================
-=== SCAN LOOP
---============================================================
 def scan_loop_function():
     """Thread for continuous scanning"""
     global SCAN_ACTIVE
@@ -125,9 +119,6 @@ def scan_loop():
         SCAN_THREAD.start()
         print_info("Scan loop started (refreshes every 5s)")
 
-# ============================================================
-=== GET CONNECTION INFO
---============================================================
 def connection_info():
     """Get current WiFi connection info"""
     os.system('clear')
