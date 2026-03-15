@@ -27,18 +27,12 @@ FAILED_COUNT = 0
 LOCK = threading.Lock()
 RUNNING = True
 
-# ============================================================
-=== REPORT REASONS
---============================================================
 REPORT_REASONS = [
     "spam", "harassment", "nudity", "violence",
     "hate_speech", "terrorism", "child_safety",
     "intellectual_property", "impersonation"
 ]
 
-# ============================================================
-=== GET USER INFO
---============================================================
 def get_tiktok_user_info(username):
     """Get TikTok user info from username"""
     # Note: TikTok API requires proper headers and sometimes cookies
@@ -63,9 +57,6 @@ def get_tiktok_user_info(username):
     
     return False, None
 
-# ============================================================
-=== SEND REPORT
---============================================================
 def send_report(target, reason):
     """Send a report to TikTok"""
     # Note: This is a simplified version - real TikTok API is more complex
@@ -106,9 +97,6 @@ def send_report(target, reason):
     except:
         return False
 
-# ============================================================
-=== WORKER FUNCTION
---============================================================
 def worker(target, count, worker_id):
     """Worker thread for sending reports"""
     global SUCCESS_COUNT, FAILED_COUNT, RUNNING
@@ -145,9 +133,6 @@ def worker(target, count, worker_id):
         FAILED_COUNT += local_failed
         print_info(f"Worker {worker_id} done: {local_success} success, {local_failed} failed")
 
-# ============================================================
-=== MAIN FUNCTION
---============================================================
 def tiktok_report():
     """Main TikTok report spam function"""
     global SUCCESS_COUNT, FAILED_COUNT, RUNNING
