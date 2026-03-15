@@ -1,0 +1,11 @@
+{
+    "fonnte_api_key": "",
+    "default_message": "Test message from MultiTool",
+    "roblox_cookie": "",
+    "tiktok_session": "",
+    "max_threads": 50,
+    "request_timeout": 10,
+    "user_agent_file": "data/user_agents.txt",
+    "username_file": "data/usernames.txt",
+    "password_file": "data/passwords.txt"
+}
