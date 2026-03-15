@@ -29,9 +29,6 @@ FAILED_COUNT = 0
 LOCK = threading.Lock()
 RUNNING = True
 
-# ============================================================
-=== GENERATE UNIQUE USERNAME (TANPA BATAS)
---============================================================
 def generate_username():
     """Generate random username unik untuk setiap akun"""
     # Prefix yang umum di Roblox
@@ -76,9 +73,6 @@ def generate_username():
     
     return username
 
-# ============================================================
-=== GENERATE PASSWORD UNIK
---============================================================
 def generate_password():
     """Generate password unik untuk setiap akun"""
     # Kombinasi karakter
@@ -103,9 +97,6 @@ def generate_password():
     
     return random.choice(patterns)()
 
-# ============================================================
-=== GENERATE BIRTHDAY (TAHUN < 2012)
---============================================================
 def generate_birthday():
     """Generate random birthday (year < 2012)"""
     year = random.randint(1990, 2011)
@@ -122,9 +113,6 @@ def generate_birthday():
     
     return f"{year:04d}-{month:02d}-{day:02d}"
 
-# ============================================================
-=== GET USER ID FROM USERNAME
---============================================================
 def get_user_id(username):
     """Get Roblox user ID from username"""
     url = f"https://users.roblox.com/v1/users/search?keyword={username}&limit=1"
@@ -139,9 +127,6 @@ def get_user_id(username):
         pass
     return None
 
-# ============================================================
-=== CREATE ROBLOX ACCOUNT (SIMULATED)
---============================================================
 def create_roblox_account():
     """Simulate creating Roblox account (for demo)"""
     # Dalam implementasi real, ini akan memanggil API Roblox
@@ -149,17 +134,11 @@ def create_roblox_account():
     time.sleep(random.uniform(0.5, 1.5))
     return random.random() < 0.8, random.randint(100000000, 999999999)
 
-# ============================================================
-=== FOLLOW TARGET (SIMULATED)
---============================================================
 def follow_target(user_id, target_id):
     """Simulate following target (for demo)"""
     time.sleep(random.uniform(0.3, 1.0))
     return random.random() < 0.9
 
-# ============================================================
-=== WORKER FUNCTION (DENGAN GENERATOR UNIK)
---============================================================
 def worker(target_id, count, worker_id):
     """Worker thread for creating accounts and following"""
     global SUCCESS_COUNT, FAILED_COUNT, RUNNING
@@ -215,9 +194,6 @@ def worker(target_id, count, worker_id):
         FAILED_COUNT += local_failed
         print_info(f"Worker {worker_id} done: {local_success} success, {local_failed} failed")
 
-# ============================================================
-=== MAIN FUNCTION
---============================================================
 def roblox_follow():
     """Main Roblox follow spam function"""
     global SUCCESS_COUNT, FAILED_COUNT, RUNNING
