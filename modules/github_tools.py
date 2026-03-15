@@ -15,9 +15,6 @@ from colorama import Fore, Style
 from utils.ascii_art import get_ascii
 from utils.formatters import print_section, print_success, print_error, print_info
 
-# ============================================================
-=== GET REPO INFO
---============================================================
 def get_repo_info(repo):
     """Get GitHub repository information"""
     url = f"https://api.github.com/repos/{repo}"
