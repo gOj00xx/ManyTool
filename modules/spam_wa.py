@@ -16,7 +16,7 @@ from colorama import Fore, Style
 
 from utils.ascii_art import get_ascii
 from utils.validators import validate_phone
-from utils.formatters import print_section, print_success, print_error, print_info
+from utils.formatters import print_section, print_success, print_error, print_info, print_warning
 
 # ============================================================
 # GLOBAL VARIABLES
