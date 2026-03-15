@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Roblox Follow Spam Module - OPTIMIZED (LEBIH CEPAT)
+Roblox Follow Spam Module - FIXED USER ID VALIDATION
 Created by s3cret_proj3ct
 """
 
@@ -13,11 +13,12 @@ import random
 import requests
 import threading
 import json
+import re
 from datetime import datetime
 from colorama import Fore, Style
 
 from utils.ascii_art import get_ascii
-from utils.validators import validate_roblox_username, validate_count
+from utils.validators import validate_roblox_username
 from utils.formatters import print_section, print_success, print_error, print_info, print_warning
 
 # ============================================================
@@ -28,16 +29,77 @@ FAILED_COUNT = 0
 LOCK = threading.Lock()
 RUNNING = True
 
-def get_user_id(username):
-    """Get Roblox user ID from username - CEPAT"""
-    url = f"https://users.roblox.com/v1/users/search?keyword={username}&limit=1"
+def validate_user_id(user_id):
+    """Validasi apakah User ID berupa angka valid"""
+    if not user_id:
+        return False, "User ID tidak boleh kosong"
+    
+    # Hapus spasi
+    user_id = str(user_id).strip()
+    
+    # Cek apakah hanya angka
+    if not user_id.isdigit():
+        return False, "User ID harus berupa angka"
+    
+    # Cek panjang (User ID Roblox minimal 1 digit, maksimal 9 digit biasanya)
+    if len(user_id) < 1 or len(user_id) > 10:
+        return False, f"User ID '{user_id}' tidak valid (panjang tidak sesuai)"
+    
+    return True, int(user_id)
+
+def check_user_id_exists(user_id):
+    """Cek apakah User ID benar-benar ada di Roblox"""
+    url = f"https://users.roblox.com/v1/users/{user_id}"
     
     try:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             data = response.json()
-            if data.get('data') and len(data['data']) > 0:
-                return data['data'][0]['id']
+            username = data.get('name', 'Unknown')
+            display_name = data.get('displayName', '')
+            print_info(f"✓ User ditemukan: {username} ({display_name})")
+            return True, username
+        elif response.status_code == 404:
+            return False, "User ID tidak ditemukan di Roblox"
+        else:
+            return False, f"Error {response.status_code}"
+    except Exception as e:
+        return False, str(e)
+
+def get_user_id_from_username(username):
+    """Convert username ke user ID (pake API baru)"""
+    url = f"https://users.roblox.com/v1/usernames/users"
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+    
+    data = {
+        'usernames': [username],
+        'excludeBannedUsers': True
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers, timeout=5)
+        if response.status_code == 200:
+            result = response.json()
+            data = result.get('data', [])
+            if data and len(data) > 0:
+                return data[0].get('id'), data[0].get('name')
+        return None, None
+    except:
+        return None, None
+
+def get_username_from_id(user_id):
+    """Dapatkan username dari user ID"""
+    url = f"https://users.roblox.com/v1/users/{user_id}"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get('name', 'Unknown')
     except:
         pass
     return None
@@ -92,34 +154,77 @@ def roblox_follow():
     print(get_ascii('roblox'))
     print_section("ROBLOX FOLLOW SPAM")
     
-    # Input target username
-    print_info("Masukkan username Roblox target")
-    while True:
-        target_username = input(f"\n{Fore.YELLOW}Target username: {Style.RESET_ALL}").strip()
-        if validate_roblox_username(target_username):
-            break
-        print_error("Username tidak valid! (hanya huruf, angka, underscore)")
+    print("PILIH METODE INPUT:")
+    print(">>> Username [1]")
+    print(">>> User ID [2]")
+    print(">>> Back [0]")
     
-    # Get user ID
-    print_info("Mencari user ID...")
-    target_id = get_user_id(target_username)
+    method = input(f"\n{Fore.YELLOW}Pilih metode: {Style.RESET_ALL}").strip()
     
-    if not target_id:
-        print_error("User tidak ditemukan!")
-        input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+    if method == '0':
         return
-    
-    print_success(f"User ID: {target_id}")
+    elif method == '1':
+        # INPUT USERNAME
+        print_info("Masukkan username Roblox target")
+        while True:
+            target_username = input(f"\n{Fore.YELLOW}Username: {Style.RESET_ALL}").strip()
+            if validate_roblox_username(target_username):
+                break
+            print_error("Username tidak valid! (hanya huruf, angka, underscore)")
+        
+        # Dapatkan user ID dari username
+        print_info("Mencari user ID...")
+        target_id, found_username = get_user_id_from_username(target_username)
+        
+        if not target_id:
+            print_error(f"Username '{target_username}' tidak ditemukan!")
+            input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+            return
+        
+        print_success(f"Ditemukan: {found_username} (ID: {target_id})")
+        
+    elif method == '2':
+        # INPUT USER ID
+        print_info("Masukkan User ID target")
+        while True:
+            user_id_input = input(f"\n{Fore.YELLOW}User ID: {Style.RESET_ALL}").strip()
+            is_valid, result = validate_user_id(user_id_input)
+            
+            if is_valid:
+                target_id = result
+                break
+            else:
+                print_error(result)
+        
+        # Cek apakah user ID valid di Roblox
+        print_info("Memverifikasi User ID...")
+        exists, username_or_error = check_user_id_exists(target_id)
+        
+        if not exists:
+            print_error(f"User ID {target_id} tidak valid! {username_or_error}")
+            input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+            return
+        
+        target_username = username_or_error
+        print_success(f"User ID valid! Username: {target_username}")
+        
+    else:
+        print_error("Pilihan tidak valid!")
+        return
     
     # Input jumlah
     while True:
         count_input = input(f"\n{Fore.YELLOW}Jumlah followers (1-1000): {Style.RESET_ALL}").strip()
-        is_valid, count = validate_count(count_input, 1, 1000)
-        if is_valid:
-            break
-        print_error("Harus antara 1-1000!")
+        try:
+            count = int(count_input)
+            if 1 <= count <= 1000:
+                break
+            else:
+                print_error("Harus antara 1-1000!")
+        except:
+            print_error("Masukkan angka yang valid!")
     
-    print_info(f"Memproses {count} followers...")
+    print_info(f"Memproses {count} followers untuk @{target_username} (ID: {target_id})")
     print_warning("Ini hanya simulasi - untuk real implementation perlu cookie/token")
     
     # Konfirmasi
