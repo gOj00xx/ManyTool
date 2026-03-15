@@ -78,3 +78,10 @@ ManyTool provides various modules for security testing:
 ---
 
 ## ⚠️ WARNING
+
+╔══════════════════════════════════════════════════════════════╗
+║  THIS TOOL IS FOR EDUCATIONAL PURPOSES ONLY                 ║
+║  UNAUTHORIZED USE AGAINST ANY SYSTEM IS ILLEGAL             ║
+║  THE DEVELOPERS ASSUME NO LIABILITY FOR MISUSE              ║
+║  YOU HAVE BEEN WARNED                                        ║
+╚══════════════════════════════════════════════════════════════╝
