@@ -161,7 +161,7 @@ def show_credits():
     print("║  🔹 WiFi & Device Scanner                          ║")
     print("║  🔹 Information Tools                              ║")
     print("║                                                    ║")
-    print("╠════════════════════════════════════════════════════╣
+    print("╠════════════════════════════════════════════════════╣")
     print(f"{Style.RESET_ALL}")
     
     print(f"\n{Fore.YELLOW}⚠️  DISCLAIMER:{Style.RESET_ALL}")
