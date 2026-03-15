@@ -2,135 +2,93 @@
 # -*- coding: utf-8 -*-
 
 """
-Information Tools Module
+About Tool Module - Informasi & Disclaimer
 Created by s3cret_proj3ct
 """
 
 import os
 import sys
-import time
-import socket
-import json
-import subprocess
-import requests
-from datetime import datetime
-from colorama import Fore, Style
+from colorama import Fore, Style, init
 
 from utils.ascii_art import get_ascii
-from utils.network import get_local_ip, get_public_ip, get_wifi_info
-from utils.formatters import print_section, print_success, print_error, print_info
+from utils.formatters import print_section
 
-# ============================================================
-=== WIFI INFO
---============================================================
-def wifi_info():
-    """Get current WiFi connection info"""
-    os.system('clear')
-    print(get_ascii('info'))
-    print_section("WIFI CONNECTION INFO")
-    
-    info = get_wifi_info()
-    
-    if info:
-        ssid = info.get('ssid')
-        if ssid:
-            print_success(f"SSID: {ssid}\n")
-            print(f"   BSSID      : {info.get('bssid', 'N/A')}")
-            print(f"   IP Address : {info.get('ip', 'N/A')}")
-            print(f"   Speed      : {info.get('link_speed', 'N/A')} Mbps")
-            print(f"   Frequency  : {info.get('frequency', 'N/A')} MHz")
-            print(f"   RSSI       : {info.get('rssi', 'N/A')} dBm")
-        else:
-            print_error("Not connected to WiFi")
-    else:
-        print_error("Could not get connection info")
-    
-    input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+init(autoreset=True)
 
-# ============================================================
-=== IP INFO
---============================================================
-def ip_info():
-    """Get IP information"""
-    os.system('clear')
-    print(get_ascii('info'))
-    print_section("IP INFORMATION")
-    
-    local_ip = get_local_ip()
-    public_ip = get_public_ip()
-    
-    print_info("Local Network:")
-    print(f"   Local IP : {local_ip}")
-    
-    try:
-        hostname = socket.gethostname()
-        print(f"   Hostname : {hostname}")
-    except:
-        pass
-    
-    print(f"\n{Fore.CYAN}Internet:{Style.RESET_ALL}")
-    print(f"   Public IP: {public_ip}")
-    
-    # Get geolocation for public IP
-    if public_ip != "Unknown":
-        try:
-            response = requests.get(f'http://ip-api.com/json/{public_ip}', timeout=5)
-            if response.status_code == 200:
-                data = response.json()
-                if data.get('status') == 'success':
-                    print(f"\n{Fore.CYAN}Geolocation:{Style.RESET_ALL}")
-                    print(f"   Country : {data.get('country', 'N/A')}")
-                    print(f"   Region  : {data.get('regionName', 'N/A')}")
-                    print(f"   City    : {data.get('city', 'N/A')}")
-                    print(f"   ISP     : {data.get('isp', 'N/A')}")
-        except:
-            pass
-    
-    input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
+def clear_screen():
+    """Clear terminal screen"""
+    os.system('clear' if os.name == 'posix' else 'cls')
 
-# ============================================================
-=== BATTERY INFO
---============================================================
-def battery_info():
-    """Get battery information"""
-    os.system('clear')
-    print(get_ascii('info'))
-    print_section("BATTERY INFORMATION")
+def about_tool():
+    """Menampilkan informasi tentang tool dengan disclaimer"""
+    clear_screen()
     
-    try:
-        result = subprocess.run(['termux-battery-status'], capture_output=True, text=True, timeout=5)
-        if result.returncode == 0 and result.stdout:
-            data = json.loads(result.stdout)
-            
-            percentage = data.get('percentage', 0)
-            status = data.get('status', 'UNKNOWN')
-            health = data.get('health', 'UNKNOWN')
-            temp = data.get('temperature', 0) / 10
-            
-            print_success(f"Battery: {percentage}%\n")
-            
-            # Status
-            if status == 'CHARGING':
-                print(f"   Power     : 🔌 CHARGING")
-            elif status == 'DISCHARGING':
-                print(f"   Power     : 🔋 DISCHARGING")
-            elif status == 'FULL':
-                print(f"   Power     : ✅ FULL")
-            else:
-                print(f"   Power     : {status}")
-            
-            print(f"   Health    : {health}")
-            print(f"   Temp      : {temp:.1f}°C")
-            
-            # Battery bar
-            bar_len = 30
-            filled = int(bar_len * percentage / 100)
-            bar = '█' * filled + '░' * (bar_len - filled)
-            print(f"\n   [{bar}] {percentage}%")
-            
-        else:
-            print_error("Could not get battery info")
-    except:
-        print_error("Battery info not available")
+    # ASCII Art (bisa diganti dengan yang lebih keren)
+    print(f"{Fore.RED}")
+    print("███╗   ███╗ █████╗ ███╗   ██╗██╗   ██╗████████╗ ██████╗  ██████╗ ██╗")
+    print("████╗ ████║██╔══██╗████╗  ██║╚██╗ ██╔╝╚══██╔══╝██╔═══██╗██╔═══██╗██║")
+    print("██╔████╔██║███████║██╔██╗ ██║ ╚████╔╝    ██║   ██║   ██║██║   ██║██║")
+    print("██║╚██╔╝██║██╔══██║██║╚██╗██║  ╚██╔╝     ██║   ██║   ██║██║   ██║██║")
+    print("██║ ╚═╝ ██║██║  ██║██║ ╚████║   ██║      ██║   ╚██████╔╝╚██████╔╝███████╗")
+    print("╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝      ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝")
+    print(f"{Style.RESET_ALL}")
+    
+    # Border
+    print(f"{Fore.RED}{'=' * 60}{Style.RESET_ALL}")
+    
+    # Judul
+    print(f"{Fore.YELLOW}This Tools \"ManyTool\" Made by s3cret_proj3ct{Style.RESET_ALL}")
+    print()
+    
+    # Disclaimer (YANG PENTING)
+    print(f"{Fore.RED}⚠️  DISCLAIMER ⚠️{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}{'=' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}we are not responsible if you are subject to sanctions{Style.RESET_ALL}")
+    print()
+    
+    # Penjelasan
+    print(f"{Fore.CYAN}This tool is created for EDUCATIONAL PURPOSES ONLY.{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Using this tool against any system without permission is ILLEGAL.{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}The developer assumes NO LIABILITY for any misuse.{Style.RESET_ALL}")
+    print()
+    
+    # Informasi Tool
+    print(f"{Fore.GREEN}📋 Tool Information:{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Version     : 7.0{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Creator     : s3cret_proj3ct{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Release     : 2025{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Modules     : 20+{Style.RESET_ALL}")
+    print()
+    
+    # Fitur
+    print(f"{Fore.GREEN}⚡ Features:{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • WhatsApp Spam (Fonnte API){Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • DDoS Attack (10 methods){Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Roblox Follow Spam{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • TikTok Report Spam{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • WiFi Scanner (Once & Loop){Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Device Scanner (Once & Loop){Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • IP Information{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • Battery Status{Style.RESET_ALL}")
+    print(f"{Fore.WHITE}  • GitHub Repo Info{Style.RESET_ALL}")
+    print()
+    
+    # Credits
+    print(f"{Fore.GREEN}👤 Credits:{Style.RESET_ALL}")
+    print(f"{Fore.MAGENTA}  Main Developer : s3cret_proj3ct{Style.RESET_ALL}")
+    print(f"{Fore.MAGENTA}  Special Thanks : All Member About Jailbreak Text{Style.RESET_ALL}")
+    print(f"{Fore.MAGENTA}  Thanks to      : Internet, WorkerGLT{Style.RESET_ALL}")
+    print()
+    
+    # Warning besar
+    print(f"{Fore.RED}{'!' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.RED}!!! USE AT YOUR OWN RISK !!!{Style.RESET_ALL}")
+    print(f"{Fore.RED}{'!' * 60}{Style.RESET_ALL}")
+    print()
+    
+    # Footer
+    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Copyright © 2025 s3cret_proj3ct{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'═' * 60}{Style.RESET_ALL}")
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
