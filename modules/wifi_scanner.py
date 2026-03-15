@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-WiFi Scanner Module - FIXED LOCATION
+WiFi Scanner Module - FIXED ATTRIBUTE ERROR
 Created by s3cret_proj3ct
 """
 
@@ -41,10 +41,18 @@ def scan_once():
     # Scan dengan timeout
     networks = scan_wifi_once()
     
-    if networks and len(networks) > 0:
+    # CEK TIPE DATA - FIX UTAMA!
+    if networks is None:
+        print_error("❌ Tidak ada jaringan ditemukan (scan gagal)")
+    elif isinstance(networks, dict):
+        # Kalo networks berupa dict (error), tampilkan pesan
+        print_error("❌ Error scanning WiFi:")
+        for key, value in networks.items():
+            print(f"   {key}: {value}")
+    elif isinstance(networks, list) and len(networks) > 0:
         print_success(f"✅ Ditemukan {len(networks)} jaringan!\n")
         
-        # Sort by signal strength
+        # Sort by signal strength (hanya kalo list)
         networks.sort(key=lambda x: x.get('level', 0), reverse=True)
         
         for i, net in enumerate(networks[:15], 1):
@@ -97,7 +105,11 @@ def scan_loop_function():
         # Scan dengan timeout cepat
         networks = scan_wifi_once()
         
-        if networks and len(networks) > 0:
+        if networks is None:
+            print_error("❌ Scan gagal")
+        elif isinstance(networks, dict):
+            print_error("❌ Error scanning WiFi")
+        elif isinstance(networks, list) and len(networks) > 0:
             networks.sort(key=lambda x: x.get('level', 0), reverse=True)
             print_success(f"✅ Ditemukan {len(networks)} jaringan:\n")
             
@@ -151,7 +163,7 @@ def connection_info():
     
     info = get_wifi_info()
     
-    if info:
+    if info and isinstance(info, dict):
         ssid = info.get('ssid')
         if ssid:
             print_success(f"✅ Terkoneksi ke: {ssid}\n")
