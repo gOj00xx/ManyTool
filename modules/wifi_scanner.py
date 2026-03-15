@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-WiFi Scanner Module
+WiFi Scanner Module - FIXED LOCATION
 Created by s3cret_proj3ct
 """
 
@@ -24,26 +24,30 @@ SCAN_ACTIVE = False
 SCAN_THREAD = None
 
 def scan_once():
-    """Scan WiFi networks once"""
+    """Scan WiFi networks once - DENGAN LOCATION CHECK REAL"""
     os.system('clear')
     print(get_ascii('wifi'))
     print_section("WiFi SCAN - ONCE")
     
+    # Cek location beneran
     if not ensure_location():
-        print_error("Location must be enabled!")
-        input("\nPress Enter to continue...")
+        print_error("\n⚠️  Location harus ON untuk scan WiFi!")
+        print_info("Coba aktifkan location dulu ya")
+        input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
         return
     
-    print_info("Scanning...")
+    print_info("Scanning WiFi... (mohon tunggu 3 detik)")
+    
+    # Scan dengan timeout
     networks = scan_wifi_once()
     
-    if networks:
-        print_success(f"Found {len(networks)} networks:\n")
+    if networks and len(networks) > 0:
+        print_success(f"✅ Ditemukan {len(networks)} jaringan!\n")
         
         # Sort by signal strength
         networks.sort(key=lambda x: x.get('level', 0), reverse=True)
         
-        for i, net in enumerate(networks[:20], 1):
+        for i, net in enumerate(networks[:15], 1):
             ssid = net.get('ssid', 'Hidden Network')
             bssid = net.get('bssid', 'N/A')
             level = net.get('level', 0)
@@ -63,7 +67,11 @@ def scan_once():
             if i <= 5:
                 print(f"     BSSID: {bssid}")
     else:
-        print_error("No networks found!")
+        print_error("❌ Tidak ada jaringan ditemukan!")
+        print_info("Pastikan:")
+        print_info("• WiFi dalam keadaan ON")
+        print_info("• Location sudah aktif")
+        print_info("• Ada jaringan di sekitar")
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
 
@@ -71,31 +79,44 @@ def scan_loop_function():
     """Thread for continuous scanning"""
     global SCAN_ACTIVE
     
+    # Cek location sekali di awal
+    if not ensure_location():
+        print_error("Location tidak aktif, scan loop tidak bisa jalan")
+        SCAN_ACTIVE = False
+        return
+    
+    scan_count = 0
+    
     while SCAN_ACTIVE:
+        scan_count += 1
         os.system('clear')
         print(get_ascii('wifi'))
-        print_section("WiFi SCAN - LOOP")
-        print_info("Press [8] again to stop\n")
+        print_section(f"WiFi SCAN - LOOP (Scan #{scan_count})")
+        print_info("Tekan [8] lagi untuk STOP\n")
         
+        # Scan dengan timeout cepat
         networks = scan_wifi_once()
         
-        if networks:
+        if networks and len(networks) > 0:
             networks.sort(key=lambda x: x.get('level', 0), reverse=True)
-            print_success(f"Found {len(networks)} networks:\n")
+            print_success(f"✅ Ditemukan {len(networks)} jaringan:\n")
             
-            for net in networks[:10]:
+            for i, net in enumerate(networks[:8], 1):
                 ssid = net.get('ssid', 'Hidden')
                 level = net.get('level', 0)
                 signal = signal_strength_bar(level)
                 print(f"   {signal} {level:4d} dBm | {ssid[:30]}")
         else:
-            print_error("No networks found")
+            print_error("❌ Tidak ada jaringan ditemukan")
         
-        print(f"\n{Fore.CYAN}Next scan in 5 seconds...{Style.RESET_ALL}")
+        print(f"\n{Fore.CYAN}⏱️  {time.strftime('%H:%M:%S')} - Next scan in 5 seconds...{Style.RESET_ALL}")
         
-        for i in range(5):
+        # Countdown 5 detik (bisa diinterupsi)
+        for i in range(5, 0, -1):
             if not SCAN_ACTIVE:
                 break
+            sys.stdout.write(f"\r   🔄 Refresh in {i} seconds...   ")
+            sys.stdout.flush()
             time.sleep(1)
 
 def scan_loop():
@@ -106,18 +127,21 @@ def scan_loop():
         SCAN_ACTIVE = False
         if SCAN_THREAD:
             SCAN_THREAD.join(timeout=2)
-        print_info("Scan loop stopped")
+        print_info("\n📡 WiFi scan loop STOPPED")
         time.sleep(1)
     else:
+        # Cek location dulu
         if not ensure_location():
-            print_error("Location must be enabled!")
+            print_error("⚠️  Location tidak aktif!")
             time.sleep(2)
             return
+        
         SCAN_ACTIVE = True
         SCAN_THREAD = threading.Thread(target=scan_loop_function)
         SCAN_THREAD.daemon = True
         SCAN_THREAD.start()
-        print_info("Scan loop started (refreshes every 5s)")
+        print_info("📡 WiFi scan loop STARTED (refresh setiap 5 detik)")
+        time.sleep(1)
 
 def connection_info():
     """Get current WiFi connection info"""
@@ -129,20 +153,23 @@ def connection_info():
     
     if info:
         ssid = info.get('ssid')
-        if not ssid:
-            print_error("Not connected to WiFi")
-        else:
-            print_success(f"Connected to: {ssid}\n")
+        if ssid:
+            print_success(f"✅ Terkoneksi ke: {ssid}\n")
             
-            print(f"   BSSID      : {info.get('bssid', 'N/A')}")
-            print(f"   IP Address : {info.get('ip', 'N/A')}")
-            print(f"   Speed      : {info.get('link_speed', 'N/A')} Mbps")
+            print(f"   📶 SSID      : {ssid}")
+            print(f"   🔵 BSSID     : {info.get('bssid', 'N/A')}")
+            print(f"   🌐 IP        : {info.get('ip', 'N/A')}")
+            print(f"   ⚡ Speed     : {info.get('link_speed', 'N/A')} Mbps")
+            print(f"   📻 Frequency : {info.get('frequency', 'N/A')} MHz")
             
             rssi = info.get('rssi', 0)
             if rssi:
                 signal = signal_strength_bar(rssi)
-                print(f"   Signal     : {signal} {rssi} dBm")
+                print(f"   📶 Signal    : {signal} {rssi} dBm")
+        else:
+            print_error("❌ Tidak terhubung ke WiFi")
     else:
-        print_error("Could not get connection info")
+        print_error("❌ Gagal mendapatkan info koneksi")
+        print_info("Pastikan WiFi menyala dan terhubung")
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
