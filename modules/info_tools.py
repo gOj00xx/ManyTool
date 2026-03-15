@@ -23,9 +23,6 @@ from utils.formatters import print_section, print_success, print_error, print_in
 def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 
-# ============================================================
-=== FUNGSI WIFI_INFO (UNTUK MENU 10)
---============================================================
 def wifi_info():
     """Get current WiFi connection info"""
     clear_screen()
@@ -50,9 +47,6 @@ def wifi_info():
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
 
-# ============================================================
-=== FUNGSI IP_INFO (UNTUK MENU 11)
---============================================================
 def ip_info():
     """Get IP information"""
     clear_screen()
@@ -91,9 +85,6 @@ def ip_info():
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
 
-# ============================================================
-=== FUNGSI BATTERY_INFO (UNTUK MENU 12)
---============================================================
 def battery_info():
     """Get battery information"""
     clear_screen()
@@ -138,9 +129,6 @@ def battery_info():
     
     input(f"\n{Fore.YELLOW}Press Enter to continue...{Style.RESET_ALL}")
 
-# ============================================================
-=== FUNGSI TAMBAHAN (UNTUK KREDIT - BISA DIPANGGIL)
---============================================================
 def show_credits():
     """Show credits information"""
     clear_screen()
