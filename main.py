@@ -208,7 +208,7 @@ def main():
         elif choice == 'B':
             clear_screen()
             print(get_ascii('main'))
-            print(f"\n{Fore.GREEN}Thank you for using Multi-Tool!")
+            print(f"\n{Fore.GREEN}Thank you for using ManyTool")
             print(f"{Fore.MAGENTA}Created by s3cret_proj3ct{Style.RESET_ALL}\n")
             sys.exit(0)
         else:
